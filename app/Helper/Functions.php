@@ -45,7 +45,7 @@ function success_response($data, string $message = "", int $code = 201): JsonRes
 function error_response(string $message = "", int $code = 400): JsonResponse
 {
     return response()->json([
-        'success' => true,
+        'success' => false,
         'message' => $message
     ], $code);
 }

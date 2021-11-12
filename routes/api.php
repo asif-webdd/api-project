@@ -17,12 +17,18 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::prefix('v1')->group(function (){
-
-    Route::post('/users', [AuthController::class, 'register']);
-
+    Route::prefix('users')->group(function (){
+        Route::get('/', [AuthController::class, 'index']);
+        Route::post('/', [AuthController::class, 'register']);
+        Route::get('/{id}', [AuthController::class, 'show']);
+        Route::patch('/{id}', [AuthController::class, 'update']);
+        Route::delete('/{id}', [AuthController::class, 'destroy']);
+    });
 });
 
-
+Route::fallback(function (){
+   return error_response(__('message.failed'));
+});
 
 
 
