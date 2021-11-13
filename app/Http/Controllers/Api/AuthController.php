@@ -22,7 +22,7 @@ class AuthController extends Controller
     {
         $user = User::select('id', 'name', 'email')->orderBy('id', 'DESC')->get();
 
-        return success_response($user, 'Successfully User Created!');
+        return success_response($user, 'Here is all users');
     }
 
 
@@ -54,7 +54,7 @@ class AuthController extends Controller
             ]);
 
             return success_response($user->only('name', 'email'), __('message.user.create.success'), '201');
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return error_response(__('message.user.create.error'));
         }
 
@@ -85,7 +85,7 @@ class AuthController extends Controller
     {
         $user = User::find($id);
 
-        if ($user){
+        if ($user) {
             $validator = Validator::make($request->all(), [
                 'name' => 'required'
             ]);
@@ -100,10 +100,10 @@ class AuthController extends Controller
                 $user->update();
 
                 return success_response($user->only('name', 'email'), __('message.user.update.success'), '201');
-            }catch (Exception $e){
+            } catch (Exception $e) {
                 return error_response(__('message.user.update.error'));
             }
-        }else{
+        } else {
             return error_response(__('message.user.manage.not_found'));
         }
 
@@ -120,11 +120,56 @@ class AuthController extends Controller
     {
         $user = User::find($id);
 
-        if ($user){
+        if ($user) {
             $user->delete();
             return success_response([], __('message.user.manage.deleted'));
-        }else{
+        } else {
             return error_response(__('message.user.manage.not_found'));
         }
+    }
+
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required',
+            'password' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return error_validation($validator->errors());
+        }
+
+        $credentials = $request->only('email', 'password');
+
+        if ($token = auth()->attempt($credentials)) {
+            return response()->json([
+                'token' => $token,
+                'token_type' => 'bearer',
+                'user' => [
+                    'user' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                ]
+            ]);
+        }
+
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+
+
+    /**
+     * Logged out user
+     *
+     * @return JsonResponse
+     */
+    public function logout(): JsonResponse
+    {
+        auth()->logout();
+
+        return response()->json(['message' => 'Successfully logged out.']);
     }
 }
